@@ -1,0 +1,198 @@
+1
+
+usercode.java
+
+	public boolean insertEmployee(int i, String string, int j, String string2) {
+		 SessionFactory sx=new AnnotationConfiguration().configure().addAnnotatedClass(Employee.class).buildSessionFactory();
+		 Session s=sx.openSession();
+		 Transaction tx=null;
+		 try{
+		 tx=s.beginTransaction();
+		 Employee emp=new Employee();
+		 emp.setEmpno(i);
+		 emp.setName(string);
+		 emp.setAge(j);
+		 emp.setCity(string2);
+		 s.save(emp);
+		 tx.commit();
+		 System.out.println("Data saved...");
+		 }catch(HibernateException e){
+			 if(tx!=null) 
+				 tx.rollback();
+			 e.printStackTrace();
+		 }finally{
+			 s.close();
+		 }
+		return true;
+............................
+mymain
+
+
+	public static void main(String[] args) {
+	
+		UserCode u=new UserCode();
+		u.insertEmployee(1001,"Nivi",7,"Chennai");
+	}
+//////////////////////////////////////////////////
+2
+
+usercode.java
+
+	public void displayEmployees() {
+		// HIbernate code to display Employees..
+		 SessionFactory sx=new AnnotationConfiguration().configure().addAnnotatedClass(Employee.class).buildSessionFactory();
+		 Session s=sx.openSession();
+		 Transaction tx=null;
+		 try{
+		 tx=s.beginTransaction();
+		 List employees=s.createQuery("from Employee").list();
+		 System.out.println("Employee records");
+		 System.out.println("-----------------");
+		 for(Iterator iterator=employees.iterator();iterator.hasNext();){
+			 Employee emp=(Employee) iterator.next();
+			 System.out.println("EmpNo :"+emp.getId()+" Name :"+emp.getName()+" Age :"+emp.getAge()+" City :"+emp.getCity());
+		 }
+	     tx.commit();
+	
+		 }catch(HibernateException e){
+			 if(tx!=null) 
+				 tx.rollback();
+			 e.printStackTrace();
+		 }finally{
+			 s.close();
+		 }
+//////////////////////////////////////////////////////////////////////////////
+3.
+
+usercode.java
+
+	public void doManytoOne() {
+	
+		SessionFactory sx=new Configuration().configure().buildSessionFactory();
+		Session s=sx.openSession();
+		Transaction t=s.beginTransaction();
+		Address a=new Address(1, "Chennai");
+		s.save(a);
+		Employee e=new Employee(1, "Rada", 89999, a);
+		s.save(e);		
+		t.commit();
+	}
+...............................................
+employee.hbm.xml
+
+<hibernate-mapping>
+   <class name = "com.dsrc.bean.Employee" table = "EMPLOYEE">
+      
+      <meta attribute = "class-description">
+         This class contains the employee detail. 
+      </meta>
+      
+      <id name = "empno" type = "int" column = "empno">
+         <generator class="assigned"/>
+      </id>
+      
+      <property name = "ename" column = "ename" type = "string"/>
+      <property name = "salary" column = "salary" type = "int"/>
+      <many-to-one name = "address" column = "address" unique="true" 
+         class="com.dsrc.bean.Address" not-null="true"/>         
+   	 </class>
+
+   <class name = "com.dsrc.bean.Address" table="ADDRESS">
+      
+      <meta attribute = "class-description">
+         This class contains the address detail. 
+      </meta>
+      
+     <id name="empno">  
+     <generator class="assigned"></generator>  
+    </id>
+      
+      <property name = "addressText" column = "address" type = "string"/>
+      
+   </class>
+
+</hibernate-mapping>
+
+................................................................
+ 
+ public class Address
+{
+	private int empno;
+	private String addressText;
+	
+	public Address(int empno,String address)
+	{
+			this.empno=empno;
+			this.setAddressText(address);
+	}
+	//Getters and Setters..
+	
+}
+...............................................................
+public class Employee 
+{
+	private int empno;
+	private String ename;
+	private int salary;
+    private Address address;
+	
+	public Employee() {}
+	   
+	   public Employee(int empno, String ename, int salary, Address address ) {
+	      this.empno=empno;
+	      this.ename=ename;
+	      this.salary=salary;
+	      this.setAddress(address);
+	   }
+	//Getters and setters..
+	}
+
+//////////////////////////////////////////////////////////////////////////
+4.
+
+usercode.java
+
+	public void doManytoOne() {
+		SessionFactory sx=new Configuration().configure().buildSessionFactory();
+		Session s=sx.openSession();
+		Transaction t=s.beginTransaction();
+		Department e=new Department(1, "HR","chennai");
+		s.save(e);	
+		Employee a=new Employee(101, "beni",e);
+		s.save(a);		
+		t.commit();
+	}
+....................................................................................
+employee.hbm.xml
+
+<?xml version = "1.0" encoding = "utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+"-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+   <class name = "com.dsrc.bean.Employee" table = "EMPLOYEE">
+     
+      <id name = "id" type = "int" column = "id">
+         <generator class="assigned"/>
+      </id>
+      
+      <property name = "name" column = "name" type = "string"/>
+     
+      <many-to-one name = "department" column = "deptno" unique="true" 
+         class="com.dsrc.bean.Department" not-null="true"/>         
+   	 </class>
+
+   <class name = "com.dsrc.bean.Department" table="Department">
+    
+     <id name="deptno"  type = "int" column = "deptno">  
+     <generator class="assigned"></generator>  
+    </id>
+       
+      <property name = "deptname" column = "deptname" type = "string"/>
+      <property name = "location" column = "location" type = "string"/>
+      
+   </class>
+
+</hibernate-mapping>
+///////////////////////////////////////////////////////////////////////////////////////////////
+  
